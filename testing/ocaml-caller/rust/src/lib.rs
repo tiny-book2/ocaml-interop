@@ -28,13 +28,13 @@ ocaml_export! {
     fn rust_twice_boxed_i64(cr, num: OCamlRef<OCamlInt64>) -> OCaml<OCamlInt64> {
         let num: i64 = num.to_rust(cr);
         let result = num * 2;
-        result.to_ocaml(cr)
+        result.into_ocaml(cr)
     }
 
     fn rust_twice_boxed_i32(cr, num: OCamlRef<OCamlInt32>) -> OCaml<OCamlInt32> {
         let num: i32 = num.to_rust(cr);
         let result = num * 2;
-        result.to_ocaml(cr)
+        result.into_ocaml(cr)
     }
 
     fn rust_add_unboxed_floats_noalloc(_cr, num: f64, num2: f64) -> f64 {
@@ -44,7 +44,7 @@ ocaml_export! {
     fn rust_twice_boxed_float(cr, num: OCamlRef<OCamlFloat>) -> OCaml<OCamlFloat> {
         let num: f64 = num.to_rust(cr);
         let result = num * 2.0;
-        result.to_ocaml(cr)
+        result.into_ocaml(cr)
     }
 
     fn rust_twice_unboxed_float(_cr, num: f64) -> f64 {
@@ -60,7 +60,7 @@ ocaml_export! {
             vec[i] += 1;
         }
 
-        vec.to_ocaml(cr)
+        vec.into_ocaml(cr)
     }
 
     fn rust_increment_ints_list(cr, ints: OCamlRef<OCamlList<OCamlInt>>) -> OCaml<OCamlList<OCamlInt>> {
@@ -70,32 +70,32 @@ ocaml_export! {
             vec[i] += 1;
         }
 
-        vec.to_ocaml(cr)
+        vec.into_ocaml(cr)
     }
 
     fn rust_make_tuple(cr, fst: OCamlRef<String>, snd: OCamlRef<OCamlInt>) -> OCaml<(String, OCamlInt)> {
         let fst: String = fst.to_rust(cr);
         let snd: i64 = snd.to_rust(cr);
         let tuple = (fst, snd);
-        tuple.to_ocaml(cr)
+        tuple.into_ocaml(cr)
     }
 
     fn rust_make_some(cr, value: OCamlRef<String>) -> OCaml<Option<String>> {
         let value: String = value.to_rust(cr);
         let some_value = Some(value);
-        some_value.to_ocaml(cr)
+        some_value.into_ocaml(cr)
     }
 
     fn rust_make_ok(cr, value: OCamlRef<OCamlInt>) -> OCaml<Result<OCamlInt, String>> {
         let value: i64 = value.to_rust(cr);
         let ok_value: Result<i64, String> = Ok(value);
-        ok_value.to_ocaml(cr)
+        ok_value.into_ocaml(cr)
     }
 
     fn rust_make_error(cr, value: OCamlRef<String>) -> OCaml<Result<OCamlInt, String>> {
         let value: String = value.to_rust(cr);
         let error_value: Result<i64, String> = Err(value);
-        error_value.to_ocaml(cr)
+        error_value.into_ocaml(cr)
     }
 
     fn rust_sleep_releasing(cr, millis: OCamlRef<OCamlInt>) {
@@ -125,7 +125,7 @@ ocaml_export! {
             Ok(Movement::RotateLeft) => "RotateLeft".to_owned(),
             Ok(Movement::RotateRight) => "RotateRight".to_owned(),
         };
-        s.to_ocaml(cr)
+        s.into_ocaml(cr)
     }
 
     fn rust_string_of_polymorphic_movement(cr, polymorphic_movement: OCamlRef<PolymorphicMovement>) -> OCaml<String> {
@@ -143,7 +143,7 @@ ocaml_export! {
             Ok(PolymorphicMovement::RotateLeft) => "`RotateLeft".to_owned(),
             Ok(PolymorphicMovement::RotateRight) => "`RotateRight".to_owned(),
         };
-        s.to_ocaml(cr)
+        s.into_ocaml(cr)
     }
 
     fn rust_rust_add_7ints|rust_rust_add_7ints_byte(

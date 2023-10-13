@@ -127,7 +127,7 @@ macro_rules! ocaml {
 ///     fn rust_twice_boxed_i32(cr, num: OCamlRef<OCamlInt32>) -> OCaml<OCamlInt32> {
 ///         let num: i32 = num.to_rust(cr);
 ///         let result = num * 2;
-///         result.to_ocaml(cr)
+///         result.into_ocaml(cr)
 ///     }
 ///
 ///     fn rust_add_unboxed_floats_noalloc(_cr, num: f64, num2: f64) -> f64 {
@@ -137,7 +137,7 @@ macro_rules! ocaml {
 ///     fn rust_twice_boxed_float(cr, num: OCamlRef<OCamlFloat>) -> OCaml<OCamlFloat> {
 ///         let num: f64 = num.to_rust(cr);
 ///         let result = num * 2.0;
-///         result.to_ocaml(cr)
+///         result.into_ocaml(cr)
 ///     }
 ///
 ///     fn rust_increment_ints_list(cr, ints: OCamlRef<OCamlList<OCamlInt>>) -> OCaml<OCamlList<OCamlInt>> {
@@ -147,14 +147,14 @@ macro_rules! ocaml {
 ///             vec[i] += 1;
 ///         }
 ///
-///         vec.to_ocaml(cr)
+///         vec.into_ocaml(cr)
 ///     }
 ///
 ///     fn rust_make_tuple(cr, fst: OCamlRef<String>, snd: OCamlRef<OCamlInt>) -> OCaml<(String, OCamlInt)> {
 ///         let fst: String = fst.to_rust(cr);
 ///         let snd: i64 = snd.to_rust(cr);
 ///         let tuple = (fst, snd);
-///         tuple.to_ocaml(cr)
+///         tuple.into_ocaml(cr)
 ///     }
 ///
 ///    fn rust_rust_add_7ints|rust_rust_add_7ints_byte(
@@ -392,7 +392,7 @@ macro_rules! ocaml_alloc_tagged_block {
             let field_count = $crate::count_fields!($($field)*);
             let block: $crate::BoxRoot<()> = $crate::BoxRoot::new($crate::OCaml::new($cr, $crate::internal::caml_alloc(field_count, $tag)));
             $(
-                let $field: $crate::OCaml<$ocaml_typ> = $field.to_ocaml($cr);
+                let $field: $crate::OCaml<$ocaml_typ> = $field.into_ocaml($cr);
                 $crate::internal::store_field(block.get_raw(), current, $field.raw());
                 current += 1;
             )+
@@ -455,7 +455,7 @@ macro_rules! ocaml_alloc_record {
             let record: $crate::BoxRoot<()> = $crate::BoxRoot::new($crate::OCaml::new($cr, $crate::internal::caml_alloc(field_count, 0)));
             $(
                 let $field = &$crate::prepare_field_for_mapping!($self.$field $(=> $conv_expr)?);
-                let $field: $crate::OCaml<$ocaml_typ> = $field.to_ocaml($cr);
+                let $field: $crate::OCaml<$ocaml_typ> = $field.into_ocaml($cr);
                 $crate::internal::store_field(record.get_raw(), current, $field.raw());
                 current += 1;
             )+
@@ -588,7 +588,7 @@ macro_rules! impl_to_ocaml_record {
         $($field:ident : $ocaml_field_typ:ty $(=> $conv_expr:expr)?),+ $(,)?
     }) => {
         unsafe impl $crate::IntoOCaml<$ocaml_typ> for &$rust_typ {
-            fn to_ocaml<'a>(self, cr: &'a mut $crate::OCamlRuntime) -> $crate::OCaml<'a, $ocaml_typ> {
+            fn into_ocaml<'a>(self, cr: &'a mut $crate::OCamlRuntime) -> $crate::OCaml<'a, $ocaml_typ> {
                 $crate::ocaml_alloc_record! {
                     cr, self {
                         $($field : $ocaml_field_typ $(=> $conv_expr)?),+
@@ -858,7 +858,7 @@ macro_rules! impl_to_ocaml_variant {
         $($t:tt)*
     }) => {
         unsafe impl $crate::IntoOCaml<$ocaml_typ> for $rust_typ {
-            fn to_ocaml<'a>(self, cr: &'a mut $crate::OCamlRuntime) -> $crate::OCaml<'a, $ocaml_typ> {
+            fn into_ocaml<'a>(self, cr: &'a mut $crate::OCamlRuntime) -> $crate::OCaml<'a, $ocaml_typ> {
                 $crate::ocaml_alloc_variant! {
                     cr, self => {
                         $($t)*
@@ -924,7 +924,7 @@ macro_rules! impl_to_ocaml_polymorphic_variant {
         $($t:tt)*
     }) => {
         unsafe impl $crate::IntoOCaml<$ocaml_typ> for &$rust_typ {
-            fn to_ocaml<'a>(self, cr: &'a mut $crate::OCamlRuntime) -> $crate::OCaml<'a, $ocaml_typ> {
+            fn into_ocaml<'a>(self, cr: &'a mut $crate::OCamlRuntime) -> $crate::OCaml<'a, $ocaml_typ> {
                 $crate::ocaml_alloc_polymorphic_variant! {
                     cr, self => {
                         $($t)*
@@ -1325,7 +1325,7 @@ macro_rules! ocaml_alloc_polymorphic_variant_match {
                 $($unit_block_tag)::+($unit_block_slot_name) => {
                     let polytag = $crate::polymorphic_variant_tag_hash!($($unit_block_tag)::+);
                     let $unit_block_slot_name: $crate::BoxRoot<$unit_block_slot_typ> =
-                        $crate::IntoOCaml::to_boxroot($unit_block_slot_name, $cr);
+                        $crate::IntoOCaml::into_boxroot($unit_block_slot_name, $cr);
                     unsafe {
                         let block = $crate::internal::caml_alloc(2, $crate::internal::tag::TAG_POLYMORPHIC_VARIANT);
                         $crate::internal::store_field(block, 0, polytag);
@@ -1344,7 +1344,7 @@ macro_rules! ocaml_alloc_polymorphic_variant_match {
                     let mut n = 0;
                     $(
                         let $block_slot_name: $crate::OCaml<$block_slot_typ> =
-                            $crate::IntoOCaml::to_ocaml($block_slot_name, $cr);
+                            $crate::IntoOCaml::into_ocaml($block_slot_name, $cr);
                         let raw = unsafe { $block_slot_name.raw() };
                         unsafe { $crate::internal::store_field(tuple.get($cr).raw(), n, raw) };
                         n += 1;

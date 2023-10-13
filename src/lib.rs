@@ -169,8 +169,8 @@
 //!     // The `IntoOCaml` trait provides the `to_ocaml` and `to_boxroot` methods to convert Rust
 //!     // values into OCaml values.
 //!     // Here `to_boxroot` is used to produce OCaml values that are already rooted.
-//!     let ocaml_bytes1_rooted: BoxRoot<String> = bytes1.to_boxroot(cr);
-//!     let ocaml_bytes2_rooted = bytes2.to_boxroot(cr);
+//!     let ocaml_bytes1_rooted: BoxRoot<String> = bytes1.into_boxroot(cr);
+//!     let ocaml_bytes2_rooted = bytes2.into_boxroot(cr);
 //!
 //!     // Rust `i64` integers can be converted into OCaml fixnums with `OCaml::of_i64`
 //!     // and `OCaml::of_i64_unchecked`.
@@ -261,7 +261,7 @@
 //!             vec[i] += 1;
 //!         }
 //!
-//!         vec.to_ocaml(cr)
+//!         vec.into_ocaml(cr)
 //!     }
 //! }
 //! ```

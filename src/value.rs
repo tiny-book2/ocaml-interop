@@ -533,7 +533,7 @@ where
     for<'c> &'c RustValue: crate::IntoOCaml<OCamlValue>,
 {
     fn to_rooted(self, cr: &mut OCamlRuntime) -> RefOrRooted<'a, 'b, OCamlValue> {
-        let boxroot = crate::IntoOCaml::to_boxroot(self, cr);
+        let boxroot = crate::IntoOCaml::into_boxroot(self, cr);
         RefOrRooted::Root(boxroot)
     }
 }
