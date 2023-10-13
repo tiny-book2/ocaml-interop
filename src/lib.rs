@@ -18,7 +18,7 @@
 //!   * [OCaml value representation](#ocaml-value-representation)
 //!   * [Converting between OCaml and Rust data](#converting-between-ocaml-and-rust-data)
 //!     + [`FromOCaml` trait](#fromocaml-trait)
-//!     + [`ToOCaml` trait](#toocaml-trait)
+//!     + [`IntoOCaml` trait](#toocaml-trait)
 //!   * [Calling convention](#calling-convention)
 //!   * [OCaml exceptions](#ocaml-exceptions)
 //!   * [Calling into OCaml from Rust](#calling-into-ocaml-from-rust)
@@ -61,9 +61,9 @@
 //!
 //! [`OCamlRef`]`<T>` values have a `to_rust(cr)` that needs an [`OCamlRuntime`] reference to be passed to it.
 //!
-//! #### [`ToOCaml`] trait
+//! #### [`IntoOCaml`] trait
 //!
-//! The [`ToOCaml`] trait implements conversion from Rust values into OCaml values, using the `to_ocaml` method.
+//! The [`IntoOCaml`] trait implements conversion from Rust values into OCaml values, using the `to_ocaml` method.
 //! It takes a single parameter that must be a `&mut OCamlRuntime`.
 //!
 //! ### Calling convention
@@ -129,7 +129,7 @@
 //!
 //! ```rust,no_run
 //! use ocaml_interop::{
-//!     BoxRoot, FromOCaml, OCaml, OCamlInt, OCamlRef, ToOCaml, OCamlRuntime
+//!     BoxRoot, FromOCaml, OCaml, OCamlInt, OCamlRef, IntoOCaml, OCamlRuntime
 //! };
 //!
 //! // To call an OCaml function, it first has to be declared inside an `ocaml!` macro block:
@@ -166,7 +166,7 @@
 //!     // Any calls into the OCaml runtime takes as input a `&mut` reference to an `OCamlRuntime`
 //!     // value that is obtained as the result of initializing the OCaml runtime with the
 //!     // `OCamlRuntime::init()` call.
-//!     // The `ToOCaml` trait provides the `to_ocaml` and `to_boxroot` methods to convert Rust
+//!     // The `IntoOCaml` trait provides the `to_ocaml` and `to_boxroot` methods to convert Rust
 //!     // values into OCaml values.
 //!     // Here `to_boxroot` is used to produce OCaml values that are already rooted.
 //!     let ocaml_bytes1_rooted: BoxRoot<String> = bytes1.to_boxroot(cr);
@@ -232,7 +232,7 @@
 //! ```rust,no_run
 //! use ocaml_interop::{
 //!     ocaml_export, FromOCaml, OCamlInt, OCaml, OCamlBytes,
-//!     OCamlRef, ToOCaml,
+//!     OCamlRef, IntoOCaml,
 //! };
 //!
 //! // `ocaml_export` expands the function definitions by adding `pub` visibility and
@@ -295,7 +295,7 @@ mod value;
 pub use crate::boxroot::BoxRoot;
 
 pub use crate::closure::{OCamlFn1, OCamlFn2, OCamlFn3, OCamlFn4, OCamlFn5};
-pub use crate::conv::{FromOCaml, ToOCaml};
+pub use crate::conv::{FromOCaml, IntoOCaml};
 pub use crate::error::OCamlException;
 pub use crate::memory::alloc_cons as cons;
 pub use crate::memory::OCamlRef;

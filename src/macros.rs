@@ -547,7 +547,7 @@ macro_rules! impl_from_ocaml_record {
     };
 }
 
-/// Implements [`ToOCaml`] for mapping a Rust record into an OCaml record.
+/// Implements [`IntoOCaml`] for mapping a Rust record into an OCaml record.
 ///
 /// It is important that the order of the fields remains the same as in the OCaml type declaration.
 ///
@@ -587,7 +587,7 @@ macro_rules! impl_to_ocaml_record {
     ($rust_typ:ty => $ocaml_typ:ident {
         $($field:ident : $ocaml_field_typ:ty $(=> $conv_expr:expr)?),+ $(,)?
     }) => {
-        unsafe impl $crate::ToOCaml<$ocaml_typ> for &$rust_typ {
+        unsafe impl $crate::IntoOCaml<$ocaml_typ> for &$rust_typ {
             fn to_ocaml<'a>(self, cr: &'a mut $crate::OCamlRuntime) -> $crate::OCaml<'a, $ocaml_typ> {
                 $crate::ocaml_alloc_record! {
                     cr, self {
@@ -816,7 +816,7 @@ macro_rules! ocaml_alloc_variant {
     };
 }
 
-/// Implements [`ToOCaml`] for mapping a Rust enum into an OCaml variant.
+/// Implements [`IntoOCaml`] for mapping a Rust enum into an OCaml variant.
 ///
 /// The match in this conversion is exhaustive, and requires that every enum case is covered.
 ///
@@ -857,7 +857,7 @@ macro_rules! impl_to_ocaml_variant {
     ($rust_typ:ty => $ocaml_typ:ty {
         $($t:tt)*
     }) => {
-        unsafe impl $crate::ToOCaml<$ocaml_typ> for $rust_typ {
+        unsafe impl $crate::IntoOCaml<$ocaml_typ> for $rust_typ {
             fn to_ocaml<'a>(self, cr: &'a mut $crate::OCamlRuntime) -> $crate::OCaml<'a, $ocaml_typ> {
                 $crate::ocaml_alloc_variant! {
                     cr, self => {
@@ -879,7 +879,7 @@ macro_rules! impl_to_ocaml_variant {
     };
 }
 
-/// Implements [`ToOCaml`] for mapping a Rust enum into an OCaml polymorphic variant.
+/// Implements [`IntoOCaml`] for mapping a Rust enum into an OCaml polymorphic variant.
 ///
 /// The match in this conversion is exhaustive, and requires that every enum case is covered.
 ///
@@ -923,7 +923,7 @@ macro_rules! impl_to_ocaml_polymorphic_variant {
     ($rust_typ:ty => $ocaml_typ:ty {
         $($t:tt)*
     }) => {
-        unsafe impl $crate::ToOCaml<$ocaml_typ> for &$rust_typ {
+        unsafe impl $crate::IntoOCaml<$ocaml_typ> for &$rust_typ {
             fn to_ocaml<'a>(self, cr: &'a mut $crate::OCamlRuntime) -> $crate::OCaml<'a, $ocaml_typ> {
                 $crate::ocaml_alloc_polymorphic_variant! {
                     cr, self => {
@@ -1325,7 +1325,7 @@ macro_rules! ocaml_alloc_polymorphic_variant_match {
                 $($unit_block_tag)::+($unit_block_slot_name) => {
                     let polytag = $crate::polymorphic_variant_tag_hash!($($unit_block_tag)::+);
                     let $unit_block_slot_name: $crate::BoxRoot<$unit_block_slot_typ> =
-                        $crate::ToOCaml::to_boxroot($unit_block_slot_name, $cr);
+                        $crate::IntoOCaml::to_boxroot($unit_block_slot_name, $cr);
                     unsafe {
                         let block = $crate::internal::caml_alloc(2, $crate::internal::tag::TAG_POLYMORPHIC_VARIANT);
                         $crate::internal::store_field(block, 0, polytag);
@@ -1344,7 +1344,7 @@ macro_rules! ocaml_alloc_polymorphic_variant_match {
                     let mut n = 0;
                     $(
                         let $block_slot_name: $crate::OCaml<$block_slot_typ> =
-                            $crate::ToOCaml::to_ocaml($block_slot_name, $cr);
+                            $crate::IntoOCaml::to_ocaml($block_slot_name, $cr);
                         let raw = unsafe { $block_slot_name.raw() };
                         unsafe { $crate::internal::store_field(tuple.get($cr).raw(), n, raw) };
                         n += 1;

@@ -19,7 +19,7 @@ use crate::{
 };
 
 /// Implements conversion from Rust values into OCaml values.
-pub unsafe trait ToOCaml<T>: Sized {
+pub unsafe trait IntoOCaml<T>: Sized {
     /// Convert to OCaml value. Return an already rooted value as [`BoxRoot`]`<T>`.
     fn to_boxroot(self, cr: &mut OCamlRuntime) -> BoxRoot<T> {
         BoxRoot::new(self.to_ocaml(cr))
@@ -29,91 +29,91 @@ pub unsafe trait ToOCaml<T>: Sized {
     fn to_ocaml<'a>(self, cr: &'a mut OCamlRuntime) -> OCaml<'a, T>;
 }
 
-unsafe impl<'root, T> ToOCaml<T> for OCamlRef<'root, T> {
+unsafe impl<'root, T> IntoOCaml<T> for OCamlRef<'root, T> {
     fn to_ocaml<'a>(self, cr: &'a mut OCamlRuntime) -> OCaml<'a, T> {
         unsafe { OCaml::new(cr, self.get_raw()) }
     }
 }
 
-unsafe impl<T> ToOCaml<T> for BoxRoot<T> {
+unsafe impl<T> IntoOCaml<T> for BoxRoot<T> {
     fn to_ocaml<'a>(self, cr: &'a mut OCamlRuntime) -> OCaml<'a, T> {
         self.get(cr)
     }
 }
 
-unsafe impl ToOCaml<()> for () {
+unsafe impl IntoOCaml<()> for () {
     fn to_ocaml(self, _cr: &mut OCamlRuntime) -> OCaml<'static, ()> {
         OCaml::unit()
     }
 }
 
-unsafe impl ToOCaml<OCamlInt> for i64 {
+unsafe impl IntoOCaml<OCamlInt> for i64 {
     fn to_ocaml<'a>(self, cr: &'a mut OCamlRuntime) -> OCaml<'a, OCamlInt> {
         unsafe { OCaml::new(cr, ((self << 1) | 1i64) as RawOCaml) }
     }
 }
 
-unsafe impl ToOCaml<OCamlInt> for i32 {
+unsafe impl IntoOCaml<OCamlInt> for i32 {
     fn to_ocaml<'a>(self, cr: &'a mut OCamlRuntime) -> OCaml<'a, OCamlInt> {
         (self as i64).to_ocaml(cr)
     }
 }
 
-unsafe impl ToOCaml<OCamlInt32> for i32 {
+unsafe impl IntoOCaml<OCamlInt32> for i32 {
     fn to_ocaml<'a>(self, cr: &'a mut OCamlRuntime) -> OCaml<'a, OCamlInt32> {
         alloc_int32(cr, self)
     }
 }
 
-unsafe impl ToOCaml<OCamlInt64> for i64 {
+unsafe impl IntoOCaml<OCamlInt64> for i64 {
     fn to_ocaml<'a>(self, cr: &'a mut OCamlRuntime) -> OCaml<'a, OCamlInt64> {
         alloc_int64(cr, self)
     }
 }
 
-unsafe impl ToOCaml<OCamlFloat> for f64 {
+unsafe impl IntoOCaml<OCamlFloat> for f64 {
     fn to_ocaml<'a>(self, cr: &'a mut OCamlRuntime) -> OCaml<'a, OCamlFloat> {
         alloc_double(cr, self)
     }
 }
 
-unsafe impl ToOCaml<bool> for bool {
+unsafe impl IntoOCaml<bool> for bool {
     fn to_ocaml<'a>(self, cr: &'a mut OCamlRuntime) -> OCaml<'a, bool> {
         unsafe { OCaml::new(cr, if self { TRUE } else { FALSE }) }
     }
 }
 
-unsafe impl ToOCaml<OCamlInt> for &i64 {
+unsafe impl IntoOCaml<OCamlInt> for &i64 {
     fn to_ocaml<'a>(self, cr: &'a mut OCamlRuntime) -> OCaml<'a, OCamlInt> {
         unsafe { OCaml::new(cr, ((self << 1) | 1i64) as RawOCaml) }
     }
 }
 
-unsafe impl ToOCaml<OCamlInt> for &i32 {
+unsafe impl IntoOCaml<OCamlInt> for &i32 {
     fn to_ocaml<'a>(self, cr: &'a mut OCamlRuntime) -> OCaml<'a, OCamlInt> {
         (*self as i64).to_ocaml(cr)
     }
 }
 
-unsafe impl ToOCaml<OCamlInt32> for &i32 {
+unsafe impl IntoOCaml<OCamlInt32> for &i32 {
     fn to_ocaml<'a>(self, cr: &'a mut OCamlRuntime) -> OCaml<'a, OCamlInt32> {
         alloc_int32(cr, *self)
     }
 }
 
-unsafe impl ToOCaml<OCamlInt64> for &i64 {
+unsafe impl IntoOCaml<OCamlInt64> for &i64 {
     fn to_ocaml<'a>(self, cr: &'a mut OCamlRuntime) -> OCaml<'a, OCamlInt64> {
         alloc_int64(cr, *self)
     }
 }
 
-unsafe impl ToOCaml<OCamlFloat> for &f64 {
+unsafe impl IntoOCaml<OCamlFloat> for &f64 {
     fn to_ocaml<'a>(self, cr: &'a mut OCamlRuntime) -> OCaml<'a, OCamlFloat> {
         alloc_double(cr, *self)
     }
 }
 
-unsafe impl ToOCaml<bool> for &bool {
+unsafe impl IntoOCaml<bool> for &bool {
     fn to_ocaml<'a>(self, cr: &'a mut OCamlRuntime) -> OCaml<'a, bool> {
         unsafe { OCaml::new(cr, if *self { TRUE } else { FALSE }) }
     }
@@ -124,78 +124,78 @@ unsafe impl ToOCaml<bool> for &bool {
 // of the Box<T> implementation bellow, which causes a trait implementation
 // conflict.
 
-unsafe impl ToOCaml<String> for &str {
+unsafe impl IntoOCaml<String> for &str {
     fn to_ocaml<'a>(self, cr: &'a mut OCamlRuntime) -> OCaml<'a, String> {
         alloc_string(cr, self)
     }
 }
 
-unsafe impl ToOCaml<OCamlBytes> for &str {
+unsafe impl IntoOCaml<OCamlBytes> for &str {
     fn to_ocaml<'a>(self, cr: &'a mut OCamlRuntime) -> OCaml<'a, OCamlBytes> {
         alloc_bytes(cr, self.as_bytes())
     }
 }
 
-unsafe impl ToOCaml<OCamlBytes> for &[u8] {
+unsafe impl IntoOCaml<OCamlBytes> for &[u8] {
     fn to_ocaml<'a>(self, cr: &'a mut OCamlRuntime) -> OCaml<'a, OCamlBytes> {
         alloc_bytes(cr, self)
     }
 }
 
-unsafe impl ToOCaml<String> for &[u8] {
+unsafe impl IntoOCaml<String> for &[u8] {
     fn to_ocaml<'a>(self, cr: &'a mut OCamlRuntime) -> OCaml<'a, String> {
         alloc_string(cr, unsafe { str::from_utf8_unchecked(self) })
     }
 }
 
-unsafe impl ToOCaml<String> for String {
+unsafe impl IntoOCaml<String> for String {
     fn to_ocaml<'a>(self, cr: &'a mut OCamlRuntime) -> OCaml<'a, String> {
         self.as_str().to_ocaml(cr)
     }
 }
 
-unsafe impl ToOCaml<OCamlBytes> for String {
+unsafe impl IntoOCaml<OCamlBytes> for String {
     fn to_ocaml<'a>(self, cr: &'a mut OCamlRuntime) -> OCaml<'a, OCamlBytes> {
         self.as_str().to_ocaml(cr)
     }
 }
 
-unsafe impl ToOCaml<String> for &String {
+unsafe impl IntoOCaml<String> for &String {
     fn to_ocaml<'a>(self, cr: &'a mut OCamlRuntime) -> OCaml<'a, String> {
         self.as_str().to_ocaml(cr)
     }
 }
 
-unsafe impl ToOCaml<OCamlBytes> for &String {
+unsafe impl IntoOCaml<OCamlBytes> for &String {
     fn to_ocaml<'a>(self, cr: &'a mut OCamlRuntime) -> OCaml<'a, OCamlBytes> {
         self.as_str().to_ocaml(cr)
     }
 }
 
-unsafe impl ToOCaml<String> for Vec<u8> {
+unsafe impl IntoOCaml<String> for Vec<u8> {
     fn to_ocaml<'a>(self, cr: &'a mut OCamlRuntime) -> OCaml<'a, String> {
         self.as_slice().to_ocaml(cr)
     }
 }
 
-unsafe impl ToOCaml<OCamlBytes> for Vec<u8> {
+unsafe impl IntoOCaml<OCamlBytes> for Vec<u8> {
     fn to_ocaml<'a>(self, cr: &'a mut OCamlRuntime) -> OCaml<'a, OCamlBytes> {
         self.as_slice().to_ocaml(cr)
     }
 }
 
-unsafe impl<A, OCamlA> ToOCaml<OCamlA> for &Box<A>
+unsafe impl<A, OCamlA> IntoOCaml<OCamlA> for &Box<A>
 where
-    for<'a> &'a A: ToOCaml<OCamlA>,
+    for<'a> &'a A: IntoOCaml<OCamlA>,
 {
     fn to_ocaml<'a>(self, cr: &'a mut OCamlRuntime) -> OCaml<'a, OCamlA> {
         self.as_ref().to_ocaml(cr)
     }
 }
 
-unsafe impl<A, OCamlA: 'static> ToOCaml<Option<OCamlA>> for Option<A>
+unsafe impl<A, OCamlA: 'static> IntoOCaml<Option<OCamlA>> for Option<A>
 where
-    A: ToOCaml<OCamlA>,
+    A: IntoOCaml<OCamlA>,
 {
     fn to_ocaml<'a>(self, cr: &'a mut OCamlRuntime) -> OCaml<'a, Option<OCamlA>> {
         if let Some(value) = self {
@@ -207,9 +207,9 @@ where
     }
 }
 
-unsafe impl<A, OCamlA: 'static> ToOCaml<Option<OCamlA>> for &Option<A>
+unsafe impl<A, OCamlA: 'static> IntoOCaml<Option<OCamlA>> for &Option<A>
 where
-    for<'a> &'a A: ToOCaml<OCamlA>,
+    for<'a> &'a A: IntoOCaml<OCamlA>,
 {
     fn to_ocaml<'a>(self, cr: &'a mut OCamlRuntime) -> OCaml<'a, Option<OCamlA>> {
         if let Some(value) = self {
@@ -221,11 +221,11 @@ where
     }
 }
 
-unsafe impl<A, OCamlA: 'static, Err, OCamlErr: 'static> ToOCaml<Result<OCamlA, OCamlErr>>
+unsafe impl<A, OCamlA: 'static, Err, OCamlErr: 'static> IntoOCaml<Result<OCamlA, OCamlErr>>
     for Result<A, Err>
 where
-    A: ToOCaml<OCamlA>,
-    Err: ToOCaml<OCamlErr>,
+    A: IntoOCaml<OCamlA>,
+    Err: IntoOCaml<OCamlErr>,
 {
     fn to_ocaml<'a>(self, cr: &'a mut OCamlRuntime) -> OCaml<'a, Result<OCamlA, OCamlErr>> {
         match self {
@@ -241,11 +241,11 @@ where
     }
 }
 
-unsafe impl<A, OCamlA: 'static, Err, OCamlErr: 'static> ToOCaml<Result<OCamlA, OCamlErr>>
+unsafe impl<A, OCamlA: 'static, Err, OCamlErr: 'static> IntoOCaml<Result<OCamlA, OCamlErr>>
     for &Result<A, Err>
 where
-    for<'a> &'a A: ToOCaml<OCamlA>,
-    for<'a> &'a Err: ToOCaml<OCamlErr>,
+    for<'a> &'a A: IntoOCaml<OCamlA>,
+    for<'a> &'a Err: IntoOCaml<OCamlErr>,
 {
     fn to_ocaml<'a>(self, cr: &'a mut OCamlRuntime) -> OCaml<'a, Result<OCamlA, OCamlErr>> {
         match self {
@@ -261,9 +261,9 @@ where
     }
 }
 
-unsafe impl<A, OCamlA: 'static> ToOCaml<OCamlList<OCamlA>> for &[A]
+unsafe impl<A, OCamlA: 'static> IntoOCaml<OCamlList<OCamlA>> for &[A]
 where
-    for<'a> &'a A: ToOCaml<OCamlA>,
+    for<'a> &'a A: IntoOCaml<OCamlA>,
 {
     fn to_ocaml<'a>(self, cr: &'a mut OCamlRuntime) -> OCaml<'a, OCamlList<OCamlA>> {
         let mut result = BoxRoot::new(OCaml::nil());
@@ -276,9 +276,9 @@ where
     }
 }
 
-unsafe impl<A, OCamlA: 'static> ToOCaml<OCamlList<OCamlA>> for &Vec<A>
+unsafe impl<A, OCamlA: 'static> IntoOCaml<OCamlList<OCamlA>> for &Vec<A>
 where
-    for<'a> &'a A: ToOCaml<OCamlA>,
+    for<'a> &'a A: IntoOCaml<OCamlA>,
 {
     fn to_ocaml<'a>(self, cr: &'a mut OCamlRuntime) -> OCaml<'a, OCamlList<OCamlA>> {
         let mut result = BoxRoot::new(OCaml::nil());
@@ -291,9 +291,9 @@ where
     }
 }
 
-unsafe impl<A, OCamlA: 'static> ToOCaml<OCamlList<OCamlA>> for Vec<A>
+unsafe impl<A, OCamlA: 'static> IntoOCaml<OCamlList<OCamlA>> for Vec<A>
 where
-    A: ToOCaml<OCamlA>,
+    A: IntoOCaml<OCamlA>,
 {
     fn to_ocaml<'a>(self, cr: &'a mut OCamlRuntime) -> OCaml<'a, OCamlList<OCamlA>> {
         let mut result = BoxRoot::new(OCaml::nil());
@@ -306,9 +306,9 @@ where
     }
 }
 
-unsafe impl<'b, 'c, T, OCamlT: 'static> ToOCaml<OCamlT> for &'b &'c T
+unsafe impl<'b, 'c, T, OCamlT: 'static> IntoOCaml<OCamlT> for &'b &'c T
 where
-    for<'a> &'a T: ToOCaml<OCamlT>,
+    for<'a> &'a T: IntoOCaml<OCamlT>,
     T: ?Sized,
 {
     fn to_ocaml<'a>(self, cr: &'a mut OCamlRuntime) -> OCaml<'a, OCamlT> {
@@ -320,9 +320,9 @@ where
 
 macro_rules! tuple_to_ocaml {
     ($($n:tt: $t:ident => $ot:ident),+) => {
-        unsafe impl<$($t),+, $($ot: 'static),+> ToOCaml<($($ot),+)> for ($($t),+)
+        unsafe impl<$($t),+, $($ot: 'static),+> IntoOCaml<($($ot),+)> for ($($t),+)
         where
-            $($t: ToOCaml<$ot>),+
+            $($t: IntoOCaml<$ot>),+
         {
             fn to_ocaml<'a>(self, cr: &'a mut OCamlRuntime) -> OCaml<'a, ($($ot),+)> {
                 let len = $crate::count_fields!($($t)*);
@@ -339,9 +339,9 @@ macro_rules! tuple_to_ocaml {
             }
         }
 
-        unsafe impl<$($t),+, $($ot: 'static),+> ToOCaml<($($ot),+)> for &($($t),+)
+        unsafe impl<$($t),+, $($ot: 'static),+> IntoOCaml<($($ot),+)> for &($($t),+)
         where
-            $(for<'a> &'a $t: ToOCaml<$ot>),+
+            $(for<'a> &'a $t: IntoOCaml<$ot>),+
         {
             fn to_ocaml<'a>(self, cr: &'a mut OCamlRuntime) -> OCaml<'a, ($($ot),+)> {
                 let len = $crate::count_fields!($($t)*);
@@ -425,7 +425,7 @@ tuple_to_ocaml!(
     9: J => OCamlJ);
 
 // This copies
-unsafe impl<A: BigarrayElt> ToOCaml<Array1<A>> for &[A] {
+unsafe impl<A: BigarrayElt> IntoOCaml<Array1<A>> for &[A] {
     fn to_ocaml<'a>(self, cr: &'a mut OCamlRuntime) -> OCaml<'a, Array1<A>> {
         alloc_bigarray1(cr, self)
     }

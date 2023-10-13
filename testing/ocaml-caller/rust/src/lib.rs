@@ -3,7 +3,7 @@
 
 use ocaml_interop::{
     ocaml_export, ocaml_unpack_polymorphic_variant, ocaml_unpack_variant, OCaml, OCamlBytes,
-    OCamlFloat, OCamlInt, OCamlInt32, OCamlInt64, OCamlList, OCamlRef, ToOCaml,
+    OCamlFloat, OCamlInt, OCamlInt32, OCamlInt64, OCamlList, OCamlRef, IntoOCaml,
 };
 use std::{thread, time};
 

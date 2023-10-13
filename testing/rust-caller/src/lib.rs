@@ -5,7 +5,7 @@ extern crate ocaml_interop;
 
 #[cfg(test)]
 use ocaml_interop::cons;
-use ocaml_interop::{OCaml, OCamlBytes, OCamlRuntime, ToOCaml};
+use ocaml_interop::{OCaml, OCamlBytes, OCamlRuntime, IntoOCaml};
 #[cfg(test)]
 use std::borrow::Borrow;
 
